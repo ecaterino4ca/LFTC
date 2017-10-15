@@ -1,0 +1,14 @@
+program area
+var
+    a:real;
+    p:real;
+    r:real;
+begin
+    constant pi:real;
+    pi = 3,14;
+    read(r);
+    a = pi * r * r;
+    p = 2 * pi * r;
+    write(a);
+    write(p);
+end
