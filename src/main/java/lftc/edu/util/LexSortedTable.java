@@ -113,8 +113,8 @@ public class LexSortedTable implements SymTable {
     @Override
     public void display(Writer writer, Node root) throws IOException {
         if (root != null) {
-            writer.write(root.getIndex() + " " + root.getValue() + "\n");
             display(writer, root.getLeft());
+            writer.write(root.getIndex() + " " + root.getValue() + "\n");
             display(writer, root.getRight());
         }
     }

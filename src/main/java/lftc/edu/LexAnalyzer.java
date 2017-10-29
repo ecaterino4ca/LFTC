@@ -97,7 +97,7 @@ public class LexAnalyzer {
     }
 
     private boolean validateIdentifier(String word) {
-        return Pattern.matches("^[a-zA-Z]([a-zA-Z0-9])*", word);
+        return Pattern.matches("^([a-zA-Z]([a-zA-Z0-9])){0,8}", word);
     }
 
     private boolean validateStringConst(String word) {
