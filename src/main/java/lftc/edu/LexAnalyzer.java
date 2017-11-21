@@ -20,13 +20,19 @@ public class LexAnalyzer {
     private List<Tuple<Integer, Integer>> pif;
     private SymTable symTable;
     private AutomataFinita automataFinitaIdentifier;
-    private AutomataFinita automataFinitaConstant;
+    private AutomataFinita automataFinitaConstantInt;
+    private AutomataFinita automataFinitaConstantReal;
+    private AutomataFinita automataFinitaConstantChar;
+    private AutomataFinita automataFinitaConstantString;
     private AutomataFinita automataFinitaDelimitatori;
 
     public LexAnalyzer(String codificationFileName) throws FileNotFoundException {
         symTable = new LexSortedTable();
         automataFinitaIdentifier = new AutomataFinita("src/main/resources/automata.txt");
-        automataFinitaConstant = new AutomataFinita("src/main/resources/automataConstant.txt");
+        automataFinitaConstantInt = new AutomataFinita("src/main/resources/automataConstant.txt");
+        automataFinitaConstantReal = new AutomataFinita("src/main/resources/automataConstantReal.txt");
+        automataFinitaConstantChar = new AutomataFinita("src/main/resources/automataConstantChar.txt");
+        automataFinitaConstantString = new AutomataFinita("src/main/resources/automataConstantString.txt");
         automataFinitaDelimitatori = new AutomataFinita("src/main/resources/automataDelimitatori.txt");
         pif = new ArrayList<>();
         lineCount = 0;
@@ -84,7 +90,7 @@ public class LexAnalyzer {
                 continue;
             }
 
-            String constant = automataFinitaConstant.findLongestSequence(line);
+            String constant = verifyAutomataConstant(line);
             if (constant != null){
                 processToken(constant, 1);
                 line = line.substring(constant.length(), line.length());
@@ -92,12 +98,29 @@ public class LexAnalyzer {
                 continue;
             }
 
-            if (length == line.length()){
+            if (length == line.length() && line.length() != 0){
                 throw new CustomException("Error: Invalid token at line " + lineCount);
             }
             length = line.length();
         }
 
+    }
+
+    private String verifyAutomataConstant(String line){
+
+        List<String> strings = new ArrayList<>();
+        strings.add(automataFinitaConstantInt.findLongestSequence(line));
+        strings.add(automataFinitaConstantReal.findLongestSequence(line));
+        strings.add(automataFinitaConstantString.findLongestSequence(line));
+        strings.add(automataFinitaConstantChar.findLongestSequence(line));
+
+        strings.removeIf(Objects::isNull);
+
+        if (strings.size() != 0 ){
+            return strings.stream().max(Comparator.comparingInt(String::length)).get();
+        }
+
+        return null;
     }
 
     private void iterateTokenizer(StringTokenizer tokenizer) throws CustomException, IOException {
