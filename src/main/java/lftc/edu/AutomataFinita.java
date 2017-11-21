@@ -1,4 +1,6 @@
-package automata_finita;
+package lftc.edu;
+
+import automata_finita.Transition;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -75,8 +77,13 @@ public class AutomataFinita {
         // read and add the transitions
         for (int i = 0; i < nrEntries; i++) {
             line = s.nextLine().split(" ");
-            tranzitions.addTransition(line[0], line[1], line[2]);
-            alphabet.add(line[2]);
+            if(line[2].equals("$")) {
+                tranzitions.addTransition(line[0], line[1], " ");
+                alphabet.add(" ");
+            } else {
+                tranzitions.addTransition(line[0], line[1], line[2]);
+                alphabet.add(line[2]);
+            }
         }
 
         List<String> deduped = states.stream().distinct().collect(Collectors.toList());
@@ -125,6 +132,10 @@ public class AutomataFinita {
     }
 
     public String findLongestSequence(String sequence){
+
+        if (sequence.isEmpty()){
+            return null;
+        }
 
         if(verifySequence(sequence)){
             return sequence;

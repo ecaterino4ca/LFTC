@@ -1,4 +1,6 @@
-package automata_finita;
+package lftc.edu;
+
+import automata_finita.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,12 +19,12 @@ public class Transition {
     }
 
     public List<String> getGoals(String startState, String value) {
-        List<String> goals = new ArrayList<>();
         if (!transitions.containsKey(startState)) {
-            return goals;
+            return null;
         }
 
         List<Tuple<String, String>> listOfTuples = transitions.get(startState);
+        List<String> goals = new ArrayList<>();
 
         for (Tuple<String, String> tuple: listOfTuples) {
             if(tuple.getVal1().equals(value)){

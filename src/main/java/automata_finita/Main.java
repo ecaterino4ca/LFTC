@@ -163,9 +163,16 @@ public class Main {
     }
 
     private static void generateSequence(){
-        //ask: what if the AF is cyclic? the generated sequence will be infinit
-        //what we need this for later?
+
+        //we don't generate, we find the longest subsequence of a sequence which is accepted!
         //TODO:implement this functionality
-        automataFinita.findLongestSequence();
+
+        BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Please give the sequence:");
+        try {
+            System.out.println(automataFinita.findLongestSequence(br.readLine()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

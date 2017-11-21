@@ -19,9 +19,15 @@ public class LexAnalyzer {
     private Map<String, Integer> codificationTable; //initialized at the start with values from codificationTable file
     private List<Tuple<Integer, Integer>> pif;
     private SymTable symTable;
+    private AutomataFinita automataFinitaIdentifier;
+    private AutomataFinita automataFinitaConstant;
+    private AutomataFinita automataFinitaDelimitatori;
 
-    public LexAnalyzer(String codificationFileName) {
+    public LexAnalyzer(String codificationFileName) throws FileNotFoundException {
         symTable = new LexSortedTable();
+        automataFinitaIdentifier = new AutomataFinita("src/main/resources/automata.txt");
+        automataFinitaConstant = new AutomataFinita("src/main/resources/automataConstant.txt");
+        automataFinitaDelimitatori = new AutomataFinita("src/main/resources/automataDelimitatori.txt");
         pif = new ArrayList<>();
         lineCount = 0;
         initCodificationTable(codificationFileName);
@@ -45,13 +51,56 @@ public class LexAnalyzer {
                 ++lineCount;
                 //StringTokenizer is used to split the list by SPECIAL_SYMBOLS
                 //thus preserving them into the result
-                tokenizer = new StringTokenizer(line, SPECIAL_SYMBOLS, true);
-                iterateTokenizer(tokenizer);
+//                tokenizer = new StringTokenizer(line, SPECIAL_SYMBOLS, true);
+//                iterateTokenizer(tokenizer);
+                parseWithAutomataFinita(line);
             }
         }
     }
 
-    private void iterateTokenizer(StringTokenizer tokenizer) throws CustomException {
+    private void parseWithAutomataFinita(String line) throws CustomException {
+        Integer length = line.length();
+        while (length > 0){
+            String delimitator = automataFinitaDelimitatori.findLongestSequence(line);
+            if (delimitator != null){
+                line = line.substring(delimitator.length(), line.length());
+                Integer posInCodificationTable = codificationTable.get(delimitator);
+                if (posInCodificationTable != null) {
+                    pif.add(new Tuple<>(posInCodificationTable, -1));
+                }
+//                length = line.length();
+                continue;
+            }
+
+            String identifier = automataFinitaIdentifier.findLongestSequence(line);
+            if (identifier != null){
+                Integer posInCodificationTable = codificationTable.get(identifier);
+                if (posInCodificationTable == null) {
+                    processToken(identifier, 0);
+                } else {
+                    pif.add(new Tuple<>(posInCodificationTable, -1));
+                }
+                line = line.substring(identifier.length(), line.length());
+                continue;
+            }
+
+            String constant = automataFinitaConstant.findLongestSequence(line);
+            if (constant != null){
+                processToken(constant, 1);
+                line = line.substring(constant.length(), line.length());
+//                length = line.length();
+                continue;
+            }
+
+            if (length == line.length()){
+                throw new CustomException("Error: Invalid token at line " + lineCount);
+            }
+            length = line.length();
+        }
+
+    }
+
+    private void iterateTokenizer(StringTokenizer tokenizer) throws CustomException, IOException {
         while (tokenizer.hasMoreElements()) {
             String word = (String) tokenizer.nextElement();
             if (word.trim().equals("")) continue;
@@ -64,8 +113,8 @@ public class LexAnalyzer {
         }
     }
 
-    private void processIdentifiersAndConstants(String word) throws CustomException {
-        if (word.length() > 255) {
+    private void processIdentifiersAndConstants(String word) throws CustomException, IOException {
+        if (word.length() > 8) {
             throw new CustomException("Error: Input is too large for " + word + " at line " + lineCount);
         }
 
@@ -73,7 +122,6 @@ public class LexAnalyzer {
             processToken(word, 0);
             return;
         }
-
         if (validateIntConstant(word) || validateCharConst(word) || validateStringConst(word) || validateRealConst(word)) {
             processToken(word, 1);
             return;
@@ -100,11 +148,11 @@ public class LexAnalyzer {
         return Pattern.matches("^([a-zA-Z]([a-zA-Z0-9])){0,8}", word);
     }
 
-    private boolean validateStringConst(String word) {
+    private boolean validateCharConst(String word) {
         return Pattern.matches("^\'[a-zA-Z0-9]\'$", word);
     }
 
-    private boolean validateCharConst(String word) {
+    private boolean validateStringConst(String word) {
         return Pattern.matches("^\"[a-zA-Z0-9]*\"$", word);
     }
 
