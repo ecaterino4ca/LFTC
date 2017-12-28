@@ -1,0 +1,12 @@
+S A B C D E
+a b c d e
+S->ABCDE
+A->a
+A->?
+B->b
+B->?
+C->c
+D->d
+D->?
+E->e
+E->?
